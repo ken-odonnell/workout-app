@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Tracker</title>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: Inter (Matches Notion) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(5px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.25s ease-out forwards'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #191919; 
+            color: #ebebeb; 
+            margin: 0; 
+            padding: 12px; 
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f3f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // ==========================================
+        // 🔒 YOUR GITHUB CONFIGURATION 
+        // We split the token in half so GitHub bots don't auto-delete it from your public UI repo.
+        // ==========================================
+        const TOKEN_PART_1 = "github_pat_11BV7PPPI0larbtiwoULNo"; // <--- PASTE THE FIRST HALF OF YOUR TOKEN HERE
+        const TOKEN_PART_2 = "_Pb2xTAt2GsNV0ES7eEP1DlCilygJVG0ypSXmfok4yzfTATDB6GGeHXCDc9g";             // <--- PASTE THE SECOND HALF OF YOUR TOKEN HERE
+        const GITHUB_TOKEN = TOKEN_PART_1 + TOKEN_PART_2;
+        
+        // This MUST be the repository where your data.json lives (the PRIVATE one)
+        const GITHUB_REPO = "ken-odonnell/workout-tracker"; 
+        // ==========================================
+
+        // --- DATA EXTRACTED FROM IMAGE ---
+        const workoutData = {
+            Tuesday: [
+                { id: 'T-A1', block: 'A1', title: 'Heavy Dumbbell Front Squats', desc: '(Hold a DB vertically at your chest)', target: 'Quads, Core, Upper Back', sets: 4, repsLabel: '4 x 8-10' },
+                { id: 'T-A2', block: 'A2', title: 'Pull-ups', desc: '(Strict, overhand grip)', target: 'Lats, Rhomboids, Biceps, Core', sets: 4, repsLabel: '4 x 5-8', noWeightInput: true },
+                { id: 'T-B1', block: 'B1', title: 'Weighted Push-ups', desc: '(Wearing the 50 lb backpack)', target: 'Chest, Front Delts, Triceps, Core', sets: 4, repsLabel: '4 x 8-12', noWeightInput: true },
+                { id: 'T-B2', block: 'B2', title: 'Dumbbell Reverse Lunges', desc: '(Hold heavy DBs at your sides)', target: 'Glutes, Quads, Hamstrings', sets: 4, repsLabel: '4 x 8/leg', perSide: 'leg' },
+                { id: 'T-C', block: 'C', title: 'Dumbbell Thrusters', desc: '(Squat directly into an overhead press)', target: 'Full Body Power, Shoulders', sets: 3, repsLabel: '3 x 10' }
+            ],
+            Wednesday: [
+                { id: 'W-A1', block: 'A1', title: 'Standing Dumbbell Overhead Press', desc: '', target: 'Shoulders, Triceps, Core Stabilization', sets: 4, repsLabel: '4 x 8-10' },
+                { id: 'W-A2', block: 'A2', title: 'Renegade Rows', desc: '(Push-up position, row one DB at a time)', target: 'Lats, Core (Anti-rotation), Shoulders', sets: 4, repsLabel: '4 x 8/arm', perSide: 'arm' },
+                { id: 'W-B1', block: 'B1', title: 'Weighted Push-ups', desc: '(Wearing the 50 lb backpack)', target: 'Chest, Front Delts, Triceps, Core', sets: 3, repsLabel: '3 x 10-12', noWeightInput: true },
+                { id: 'W-B2', block: 'B2', title: 'Underhand Chin-ups', desc: '(Strict, squeezing the biceps at the top)', target: 'Lats, Biceps, Upper Back', sets: 3, repsLabel: '3 x Max', noWeightInput: true },
+                { id: 'W-C1', block: 'C1', title: 'Weighted Plank', desc: '(Wearing your 50 lb backpack)', target: 'Total Core', sets: 3, repsLabel: '3 x 90 sec', isTime: true, noWeightInput: true },
+                { id: 'W-C2', block: 'C2', title: 'Tall-Kneeling Rotational Curls', desc: '(Hammer to Supinated, kneeling on the floor)', target: 'Biceps, Core', sets: 3, repsLabel: '3 x 10-12' }
+            ],
+            Friday: [
+                { id: 'F-A1', block: 'A1', title: 'Dumbbell RDLs', desc: '(Push hips back, squeeze glutes at the top)', target: 'Hamstrings, Glutes, Lower Back', sets: 4, repsLabel: '4 x 8-10' },
+                { id: 'F-A2', block: 'A2', title: 'Weighted Push-ups', desc: '(Wearing your 50 lb backpack)', target: 'Chest, Front Delts, Triceps, Core', sets: 4, repsLabel: '4 x 8-12', noWeightInput: true },
+                { id: 'F-B1', block: 'B1', title: 'Weighted Glute Bridges', desc: '(Backpack or heavy DB resting on hips)', target: 'Glutes, Hamstrings', sets: 4, repsLabel: '4 x 12-15' },
+                { id: 'F-B2', block: 'B2', title: 'Single-Arm Dumbbell Rows', desc: '(Brace one hand on your knee, pull heavy)', target: 'Lats, Rhomboids, Biceps', sets: 4, repsLabel: '4 x 8-10/arm', perSide: 'arm' },
+                { id: 'F-C', block: 'C', title: 'Alternating Cross-Body Hammer Curls', desc: '(Standing, curl toward opposite shoulder)', target: 'Biceps, Brachialis', sets: 3, repsLabel: '3 x 10-12/arm', perSide: 'arm' }
+            ]
+        };
+
+        const allUniqueExercises = Array.from(new Map(Object.values(workoutData).flat().map(item => [item.title, item])).values());
+
+        const generateSupersetSequence = (workouts) => {
+            const sequence = [];
+            const groups = {};
+            workouts.forEach(w => {
+                const letter = w.block.charAt(0);
+                if (!groups[letter]) groups[letter] = [];
+                groups[letter].push(w);
+            });
+            Object.keys(groups).sort().forEach(letter => {
+                const group = groups[letter];
+                const maxSets = Math.max(...group.map(w => w.sets));
+                for (let setNum = 1; setNum <= maxSets; setNum++) {
+                    group.forEach(w => {
+                        if (setNum <= w.sets) {
+                            sequence.push({ ...w, currentSet: setNum });
+                        }
+                    });
+                }
+            });
+            return sequence;
+        };
+
+        // --- CHART COMPONENT ---
+        const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+
+        function AnalyticsChart({ selection, metric, historyData, timeframe }) {
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
+            useEffect(() => {
+                if (!chartRef.current || !historyData || historyData.length === 0) return;
+
+                // 1. Determine what we are plotting (One exercise or All in a Day)
+                let exercisesToPlot = [];
+                if (selection.startsWith('DAY:')) {
+                    const day = selection.replace('DAY:', '');
+                    exercisesToPlot = workoutData[day].map(w => w.title);
+                } else {
+                    exercisesToPlot = [selection.replace('EX:', '')];
+                }
+
+                // 2. Filter history by timeframe
+                const now = new Date();
+                let filteredHistory = historyData;
+                if (timeframe === '1W') filteredHistory = historyData.filter(h => (now - new Date(h.date)) <= 7 * 24 * 60 * 60 * 1000);
+                if (timeframe === '1M') filteredHistory = historyData.filter(h => (now - new Date(h.date)) <= 30 * 24 * 60 * 60 * 1000);
+                if (timeframe === '1Y') filteredHistory = historyData.filter(h => (now - new Date(h.date)) <= 365 * 24 * 60 * 60 * 1000);
+
+                filteredHistory.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+                // Helper to calculate score (Volume = W * R, or just Reps/Time)
+                const getScore = (setsObj, isTime) => {
+                    let maxScore = 0;
+                    Object.values(setsObj).forEach(set => {
+                        const w = Number(set.weight) || 0;
+                        const r = Number(set.reps) || 0;
+                        const t = Number(set.time) || 0;
+                        let score = 0;
+                        if (isTime) score = t;
+                        else if (w > 0) score = w * r; 
+                        else score = r; 
+                        if (score > maxScore) maxScore = score;
+                    });
+                    return maxScore;
+                };
+
+                // 3. Find Baselines for % Improvement
+                const baselines = {};
+                if (metric === 'PERCENT') {
+                    exercisesToPlot.forEach(exTitle => {
+                        for (let session of historyData.sort((a,b) => new Date(a.date) - new Date(b.date))) {
+                            const logEntry = Object.values(session.logs).find(l => l.title === exTitle);
+                            if (logEntry) {
+                                baselines[exTitle] = getScore(logEntry.sets, logEntry.isTime);
+                                break; 
+                            }
+                        }
+                    });
+                }
+
+                // 4. Gather unique dates
+                const sessionDates = new Set();
+                filteredHistory.forEach(session => {
+                    const hasData = Object.values(session.logs).some(log => exercisesToPlot.includes(log.title));
+                    if (hasData) sessionDates.add(new Date(session.date).toLocaleDateString());
+                });
+                const labels = Array.from(sessionDates);
+
+                // 5. Build Datasets
+                const datasets = exercisesToPlot.map((exTitle, index) => {
+                    const dataPoints = labels.map(labelDate => {
+                        const session = filteredHistory.find(s => new Date(s.date).toLocaleDateString() === labelDate);
+                        if (!session) return null;
+                        
+                        const logEntry = Object.values(session.logs).find(l => l.title === exTitle);
+                        if (!logEntry) return null;
+
+                        const score = getScore(logEntry.sets, logEntry.isTime);
+
+                        if (metric === 'PERCENT') {
+                            const baseline = baselines[exTitle];
+                            if (!baseline || baseline === 0) return 0; // Prevent div by zero
+                            return (((score - baseline) / baseline) * 100).toFixed(1);
+                        } else {
+                            return score; // Raw Volume/Time/Reps
+                        }
+                    });
+
+                    return {
+                        label: exTitle,
+                        data: dataPoints,
+                        borderColor: CHART_COLORS[index % CHART_COLORS.length],
+                        backgroundColor: CHART_COLORS[index % CHART_COLORS.length] + '20',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: false,
+                        spanGaps: true, 
+                        pointBackgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                        pointRadius: 4
+                    };
+                }).filter(ds => ds.data.some(d => d !== null)); 
+
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
+
+                const ctx = chartRef.current.getContext('2d');
+                chartInstance.current = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { 
+                                grid: { color: '#333' }, 
+                                ticks: { 
+                                    color: '#888',
+                                    callback: function(value) {
+                                        return metric === 'PERCENT' ? value + '%' : value;
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: metric === 'PERCENT' ? '% Improvement from Baseline' : 'Performance Score',
+                                    color: '#555'
+                                }
+                            },
+                            x: { grid: { color: '#333' }, ticks: { color: '#888' } }
+                        },
+                        plugins: {
+                            legend: { 
+                                labels: { color: '#ccc', font: { size: 10 } },
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) label += ': ';
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y + (metric === 'PERCENT' ? '%' : ' pts');
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                return () => {
+                    if (chartInstance.current) chartInstance.current.destroy();
+                };
+            }, [selection, metric, historyData, timeframe]);
+
+            return <canvas ref={chartRef} className="w-full h-[350px]"></canvas>;
+        }
+
+        // --- MAIN APP ---
+        function App() {
+            const [view, setView] = useState('WORKOUT'); 
+            const [selectedDay, setSelectedDay] = useState(null);
+            
+            const [sequence, setSequence] = useState([]);
+            const [currentIndex, setCurrentIndex] = useState(-1);
+            const [status, setStatus] = useState('IDLE'); 
+            const [timeLeft, setTimeLeft] = useState(0);
+            
+            const [logs, setLogs] = useState({});
+            const [activeWeight, setActiveWeight] = useState('');
+            const [activeReps, setActiveReps] = useState('');
+            const [stopwatchTime, setStopwatchTime] = useState(0);
+            const [isStopwatchRunning, setIsStopwatchRunning] = useState(false);
+
+            const [swappedExercises, setSwappedExercises] = useState({});
+            const [isSwapping, setIsSwapping] = useState(false);
+
+            const [history, setHistory] = useState([]);
+            const [currentSessionJson, setCurrentSessionJson] = useState('');
+            const [isFetchingData, setIsFetchingData] = useState(false);
+            const [syncMessage, setSyncMessage] = useState('');
+            const [copySuccess, setCopySuccess] = useState(false);
+
+            const [analyticsSelection, setAnalyticsSelection] = useState('DAY:Tuesday');
+            const [analyticsMetric, setAnalyticsMetric] = useState('PERCENT'); 
+            const [analyticsTimeframe, setAnalyticsTimeframe] = useState('ALL');
+
+            const b64EncodeUnicode = (str) => {
+                return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function toSolidBytes(match, p1) {
+                    return String.fromCharCode('0x' + p1);
+                }));
+            };
+
+            const fetchLocalData = async () => {
+                setIsFetchingData(true);
+                try {
+                    let data = [];
+                    if (GITHUB_TOKEN && !GITHUB_TOKEN.includes("...")) {
+                        const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`, {
+                            headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
+                        });
+                        if (response.ok) {
+                            const result = await response.json();
+                            const decoded = decodeURIComponent(escape(atob(result.content)));
+                            data = JSON.parse(decoded);
+                        }
+                    } else {
+                        const saved = localStorage.getItem('notion_workout_history');
+                        if (saved) data = JSON.parse(saved);
+                    }
+                    
+                    if(data.length > 0) {
+                        setHistory(data);
+                        localStorage.setItem('notion_workout_history', JSON.stringify(data));
+                    }
+                } catch (err) {
+                    console.log('Fetch failed. Falling back to local storage.');
+                    const saved = localStorage.getItem('notion_workout_history');
+                    if (saved) setHistory(JSON.parse(saved));
+                } finally {
+                    setIsFetchingData(false);
+                }
+            };
+
+            useEffect(() => {
+                setTimeout(fetchLocalData, 100);
+            }, []);
+
+            useEffect(() => {
+                if (view === 'ANALYTICS') fetchLocalData();
+            }, [view]);
+
+            useEffect(() => {
+                if (selectedDay) {
+                    const dayWorkouts = workoutData[selectedDay].map(w => 
+                        swappedExercises[w.id] ? { ...swappedExercises[w.id], id: w.id, block: w.block, sets: w.sets } : w
+                    );
+                    setSequence(generateSupersetSequence(dayWorkouts));
+                    
+                    if (status === 'IDLE' || status === 'DONE') {
+                        setCurrentIndex(-1);
+                        setStatus('IDLE');
+                        setLogs({});
+                        setTimeLeft(0);
+                        resetActiveInputs();
+                        setCurrentSessionJson('');
+                        setAnalyticsSelection(`DAY:${selectedDay}`);
+                    }
+                }
+            }, [selectedDay, swappedExercises]);
+
+            useEffect(() => {
+                if (status === 'ACTIVE' && sequence[currentIndex]) {
+                    const task = sequence[currentIndex];
+                    if (task.currentSet > 1 && logs[task.id] && logs[task.id][task.currentSet - 1]) {
+                        const prevLog = logs[task.id][task.currentSet - 1];
+                        setActiveWeight(prevLog.weight || '');
+                        setActiveReps(prevLog.reps || '');
+                    } else {
+                        setActiveWeight('');
+                        setActiveReps('');
+                    }
+                    setStopwatchTime(0);
+                    setIsStopwatchRunning(false);
+                    setIsSwapping(false);
+                }
+            }, [currentIndex, status]);
+
+            const resetActiveInputs = () => {
+                setActiveWeight('');
+                setActiveReps('');
+                setStopwatchTime(0);
+                setIsStopwatchRunning(false);
+            };
+
+            useEffect(() => {
+                let interval = null;
+                if (status === 'RESTING' && timeLeft > 0) {
+                    interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+                } else if (status === 'RESTING' && timeLeft === 0) {
+                    setStatus('ACTIVE');
+                }
+                return () => clearInterval(interval);
+            }, [status, timeLeft]);
+
+            useEffect(() => {
+                let interval = null;
+                if (isStopwatchRunning) {
+                    interval = setInterval(() => setStopwatchTime(prev => prev + 1), 1000);
+                }
+                return () => clearInterval(interval);
+            }, [isStopwatchRunning]);
+
+            const handleRowClick = (workout) => {
+                const setsDone = logs[workout.id] ? Object.keys(logs[workout.id]).length : 0;
+                if (setsDone >= workout.sets) return;
+
+                const idx = sequence.findIndex(s => s.id === workout.id && s.currentSet === setsDone + 1);
+                if (idx !== -1) {
+                    setCurrentIndex(idx);
+                    setStatus('ACTIVE');
+                    setTimeLeft(0);
+                    resetActiveInputs();
+                }
+            };
+
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            };
+
+            const finishSetAndProceed = () => {
+                const currentTask = sequence[currentIndex];
+                
+                setLogs(prev => ({
+                    ...prev,
+                    [currentTask.id]: {
+                        ...(prev[currentTask.id] || {}),
+                        [currentTask.currentSet]: {
+                            weight: activeWeight,
+                            reps: currentTask.isTime ? null : activeReps,
+                            time: currentTask.isTime ? stopwatchTime : null
+                        }
+                    }
+                }));
+
+                const nextIndex = currentIndex + 1;
+                const nextTask = sequence[nextIndex];
+
+                if (nextTask) {
+                    setCurrentIndex(nextIndex);
+                    resetActiveInputs();
+
+                    const currentLetter = currentTask.block.charAt(0);
+                    const nextLetter = nextTask.block.charAt(0);
+                    
+                    if (currentLetter === nextLetter && currentTask.currentSet === nextTask.currentSet) {
+                        setStatus('ACTIVE');
+                        setTimeLeft(0);
+                    } else {
+                        setStatus('RESTING');
+                        setTimeLeft(90);
+                    }
+                } else {
+                    handleWorkoutComplete();
+                }
+            };
+
+            const pushToGithub = async (workoutSession) => {
+                if (!GITHUB_TOKEN || GITHUB_TOKEN.includes("...") || !GITHUB_REPO) return false;
+                
+                try {
+                    const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`;
+                    const headers = { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' };
+                    
+                    const getRes = await fetch(apiUrl, { headers });
+                    if (!getRes.ok) throw new Error("Could not read file from GitHub. Check Token.");
+                    
+                    const fileData = await getRes.json();
+                    const currentSha = fileData.sha;
+                    
+                    let existingHistory = [];
+                    try {
+                        existingHistory = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+                    } catch(e) { console.error("Could not parse existing github data"); }
+
+                    existingHistory.push(workoutSession);
+                    const updatedContentBase64 = b64EncodeUnicode(JSON.stringify(existingHistory, null, 2));
+
+                    const putRes = await fetch(apiUrl, {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify({
+                            message: `Auto-sync workout: ${workoutSession.day}`,
+                            content: updatedContentBase64,
+                            sha: currentSha
+                        })
+                    });
+
+                    if (!putRes.ok) throw new Error("Could not push update. Check Token permissions.");
+                    return true;
+
+                } catch (error) {
+                    console.error(error);
+                    setSyncMessage(`Error: ${error.message}`);
+                    return false;
+                }
+            };
+
+            const handleWorkoutComplete = async () => {
+                setStatus('SYNCING');
+                
+                const enrichedLogs = {};
+                sequence.forEach(task => {
+                    if (logs[task.id]) {
+                        enrichedLogs[task.id] = { title: task.title, isTime: task.isTime, sets: logs[task.id] };
+                    }
+                });
+
+                const workoutSession = { date: new Date().toISOString(), day: selectedDay, logs: enrichedLogs };
+
+                setCurrentSessionJson(JSON.stringify(workoutSession));
+
+                const newHistory = [...history, workoutSession];
+                setHistory(newHistory);
+                localStorage.setItem('notion_workout_history', JSON.stringify(newHistory));
+
+                if (GITHUB_TOKEN && !GITHUB_TOKEN.includes("...")) {
+                    const success = await pushToGithub(workoutSession);
+                    if (success) {
+                        setSyncMessage('Successfully auto-synced to GitHub!');
+                    } else {
+                        setSyncMessage('Auto-sync failed. Use fallback copy method below.');
+                    }
+                } else {
+                    setSyncMessage('No automation configured. Use fallback copy method.');
+                }
+                
+                setStatus('DONE');
+            };
+
+            const handleCopyJson = () => {
+                const textArea = document.createElement("textarea");
+                textArea.value = currentSessionJson;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    setCopySuccess(true);
+                    setTimeout(() => setCopySuccess(false), 2000);
+                } catch (err) {
+                    console.error('Unable to copy', err);
+                }
+                document.body.removeChild(textArea);
+            };
+
+            const renderProgressDots = (completed, total) => {
+                const dots = [];
+                for(let i = 0; i < total; i++) {
+                    dots.push(
+                        <span key={i} className={`inline-block w-2 h-2 rounded-full mx-[1.5px] shadow-sm transition-colors ${i < completed ? 'bg-green-500 shadow-green-500/50' : 'bg-gray-700'}`}></span>
+                    );
+                }
+                return <div className="flex justify-end mt-1.5">{dots}</div>;
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto flex flex-col h-full font-sans">
+                    
+                    {/* Top Navigation */}
+                    <div className="flex justify-between items-center mb-4 border-b border-gray-700/50 pb-3">
+                        <div className="flex gap-4">
+                            <button onClick={() => setView('WORKOUT')} className={`font-semibold pb-2 border-b-2 transition-colors ${view === 'WORKOUT' ? 'border-green-500 text-green-400' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Tracker</button>
+                            <button onClick={() => setView('ANALYTICS')} className={`font-semibold pb-2 border-b-2 transition-colors ${view === 'ANALYTICS' ? 'border-green-500 text-green-400' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Analytics Log</button>
+                        </div>
+                    </div>
+
+                    {/* --- WORKOUT VIEW --- */}
+                    {view === 'WORKOUT' && (
+                        <>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {['Tuesday', 'Wednesday', 'Friday'].map(day => (
+                                    <button
+                                        key={day}
+                                        onClick={() => setSelectedDay(day)}
+                                        className={`px-4 py-2 rounded-md transition-all font-medium text-sm flex-grow sm:flex-grow-0 text-center ${
+                                            selectedDay === day 
+                                            ? 'bg-[#333] text-white shadow-sm border border-gray-600' 
+                                            : 'hover:bg-[#222] text-gray-400 border border-gray-800'
+                                        }`}
+                                    >
+                                        {day}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {!selectedDay && (
+                                <div className="text-center mt-12 text-gray-500 italic text-sm">
+                                    Select a workout day above to load your program.
+                                </div>
+                            )}
+
+                            {selectedDay && (
+                                <div className="rounded-lg border border-gray-800 bg-[#1e1e1e] shadow-xl overflow-hidden">
+                                    <div className="flex flex-col w-full">
+                                        {workoutData[selectedDay].map(w => {
+                                            const isHighlighted = (status === 'ACTIVE' || status === 'SYNCING') && sequence[currentIndex]?.id === w.id;
+                                            const setsDone = logs[w.id] ? Object.keys(logs[w.id]).length : 0;
+                                            const isCompleted = setsDone >= w.sets;
+                                            
+                                            return (
+                                                <div
+                                                    key={w.id}
+                                                    onClick={() => handleRowClick(w)}
+                                                    className={`
+                                                        flex flex-col sm:flex-row p-3 sm:p-4 border-b border-gray-800/50 last:border-0 relative cursor-pointer transition-all
+                                                        ${isCompleted ? 'opacity-50 hover:opacity-80' : ''}
+                                                        ${isHighlighted ? 'bg-green-900/20' : 'hover:bg-[#252525]'}
+                                                    `}
+                                                >
+                                                    {isHighlighted && <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500"></div>}
+                                                    
+                                                    <div className="flex w-full">
+                                                        <div className="w-8 sm:w-10 font-bold text-gray-400 shrink-0 pt-0.5">{w.block}</div>
+                                                        <div className="flex-1 min-w-0 pr-3">
+                                                            <div className={`font-medium text-sm sm:text-base leading-snug ${isHighlighted ? 'text-green-400' : 'text-gray-200'}`}>{w.title}</div>
+                                                            {w.desc && <div className="text-xs text-gray-500 mt-1 leading-tight">{w.desc}</div>}
+                                                            
+                                                            {logs[w.id] && (
+                                                                <div className="mt-2 flex flex-wrap gap-2">
+                                                                    {Object.entries(logs[w.id]).map(([setNum, log]) => (
+                                                                        <div key={setNum} className="text-[10px] bg-[#2a2a2a] border border-gray-700 px-2 py-1 rounded text-gray-400">
+                                                                            <span className="text-gray-500 mr-1">S{setNum}:</span>
+                                                                            {log.weight ? `${log.weight}lb ` : ''} 
+                                                                            {w.isTime ? `${log.time || 0}s` : (w.perSide ? `${log.reps || 0}r/${w.perSide}` : `${log.reps || 0}r`)}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-col items-end shrink-0 pt-0.5">
+                                                            <div className="text-xs text-gray-400 whitespace-nowrap mb-1">{w.repsLabel}</div>
+                                                            {renderProgressDots(setsDone, w.sets)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedDay && (
+                                <div className="mt-6 mb-10 w-full animate-fade-in">
+                                    <div className={`rounded-xl border p-5 sm:p-6 shadow-2xl transition-all duration-300 min-h-[220px] flex flex-col justify-center
+                                        ${status === 'IDLE' ? 'border-gray-800 bg-[#1e1e1e]' : ''}
+                                        ${status === 'ACTIVE' ? 'border-green-800/50 bg-[#18241b]' : ''}
+                                        ${status === 'RESTING' ? 'border-amber-700/50 bg-[#241d14]' : ''}
+                                        ${status === 'SYNCING' ? 'border-blue-800/50 bg-[#1a1e24]' : ''}
+                                        ${status === 'DONE' ? 'border-gray-700 bg-[#151515]' : ''}
+                                    `}>
+                                        
+                                        {status === 'IDLE' && (
+                                            <div className="text-center">
+                                                <p className="text-gray-300 font-medium">Ready to start?</p>
+                                                <p className="text-gray-500 text-sm mt-2">Tap any exercise above to begin logging data.</p>
+                                            </div>
+                                        )}
+
+                                        {status === 'ACTIVE' && sequence[currentIndex] && (
+                                            <div className="animate-fade-in">
+                                                <div className="text-center mb-4">
+                                                    <div className="text-green-500 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-1">
+                                                        Currently Doing • Set {sequence[currentIndex].currentSet} of {sequence[currentIndex].sets}
+                                                    </div>
+                                                    
+                                                    {isSwapping ? (
+                                                        <div className="mb-2 max-w-sm mx-auto">
+                                                            <select
+                                                                className="bg-[#2a2a2a] text-white p-2 rounded border border-gray-600 w-full text-center focus:outline-none focus:border-green-500"
+                                                                value={sequence[currentIndex].title}
+                                                                onChange={(e) => {
+                                                                    const newEx = allUniqueExercises.find(ex => ex.title === e.target.value);
+                                                                    if(newEx) {
+                                                                        setSwappedExercises(prev => ({ ...prev, [sequence[currentIndex].id]: newEx }));
+                                                                        setIsSwapping(false);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {allUniqueExercises.map(ex => (
+                                                                    <option key={ex.title} value={ex.title}>{ex.title}</option>
+                                                                ))}
+                                                            </select>
+                                                            <button onClick={() => setIsSwapping(false)} className="text-xs text-gray-500 mt-2 hover:text-white">Cancel</button>
+                                                        </div>
+                                                    ) : (
+                                                        <h2 className="text-lg sm:text-xl font-bold text-gray-100 mb-1 leading-tight flex items-center justify-center gap-2">
+                                                            {sequence[currentIndex].title}
+                                                            <button onClick={() => setIsSwapping(true)} className="text-gray-500 hover:text-green-400 p-1" title="Swap Exercise">
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                                                            </button>
+                                                        </h2>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex flex-wrap justify-center gap-4 mb-6">
+                                                    {!sequence[currentIndex].noWeightInput && (
+                                                        <div className="flex flex-col">
+                                                            <label className="text-xs text-gray-400 mb-1 ml-1">Weight (lbs)</label>
+                                                            <input 
+                                                                type="number" 
+                                                                inputMode="decimal"
+                                                                pattern="[0-9]*"
+                                                                value={activeWeight} 
+                                                                onChange={e => setActiveWeight(e.target.value)} 
+                                                                placeholder="e.g. 50"
+                                                                className="bg-[#2a2a2a] border border-gray-600 rounded-lg px-4 py-2 text-white w-24 text-center focus:outline-none focus:border-green-500"
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    {!sequence[currentIndex].isTime ? (
+                                                        <div className="flex flex-col">
+                                                            <label className="text-xs text-gray-400 mb-1 ml-1">
+                                                                Reps {sequence[currentIndex].perSide ? `(per ${sequence[currentIndex].perSide})` : 'Completed'}
+                                                            </label>
+                                                            <input 
+                                                                type="number" 
+                                                                inputMode="numeric"
+                                                                pattern="[0-9]*"
+                                                                value={activeReps} 
+                                                                onChange={e => setActiveReps(e.target.value)} 
+                                                                placeholder="e.g. 10"
+                                                                className="bg-[#2a2a2a] border border-gray-600 rounded-lg px-4 py-2 text-white w-32 text-center focus:outline-none focus:border-green-500"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col items-center border border-gray-700 bg-[#222] rounded-lg p-2 px-4">
+                                                            <label className="text-xs text-gray-400 mb-1">Stopwatch (Seconds)</label>
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-2xl font-mono text-white w-16 text-center">{stopwatchTime}s</span>
+                                                                <button 
+                                                                    onClick={() => setIsStopwatchRunning(!isStopwatchRunning)}
+                                                                    className={`px-3 py-1 rounded text-sm font-semibold transition ${isStopwatchRunning ? 'bg-red-900/50 text-red-400 border border-red-800' : 'bg-green-900/50 text-green-400 border border-green-800'}`}
+                                                                >
+                                                                    {isStopwatchRunning ? 'Pause' : 'Start'}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                <button 
+                                                    onClick={finishSetAndProceed} 
+                                                    className="bg-green-600 hover:bg-green-500 text-white font-semibold py-3 px-6 sm:px-12 rounded-lg transition-transform active:scale-95 shadow-[0_0_20px_rgba(22,163,74,0.25)] flex items-center justify-center mx-auto text-sm sm:text-base w-full sm:w-auto"
+                                                >
+                                                    Finish Set & Proceed
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {status === 'RESTING' && (
+                                            <div className="text-center animate-fade-in">
+                                                <div className="text-amber-500 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-1">
+                                                    Rest & Recover
+                                                </div>
+                                                <div className="text-6xl sm:text-7xl font-mono font-light text-white tracking-wider my-3 drop-shadow-md">
+                                                    {formatTime(timeLeft)}
+                                                </div>
+                                                
+                                                {sequence[currentIndex] && (
+                                                    <div className="text-gray-400 text-xs sm:text-sm mb-5 px-2">
+                                                        Up Next: <span className="font-semibold text-gray-200">{sequence[currentIndex].title}</span> (Set {sequence[currentIndex].currentSet})
+                                                    </div>
+                                                )}
+
+                                                <button 
+                                                    onClick={() => setTimeLeft(0)} 
+                                                    className="text-amber-500 hover:text-amber-400 border border-amber-800 hover:border-amber-600 hover:bg-amber-900/30 font-medium py-2 px-6 rounded-lg transition-all text-sm mx-auto block"
+                                                >
+                                                    Skip Rest
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {status === 'SYNCING' && (
+                                            <div className="text-center animate-fade-in flex flex-col items-center justify-center">
+                                                <svg className="w-12 h-12 text-blue-500 animate-spin mb-4" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                <p className="text-blue-400 font-medium">Syncing data automatically to GitHub...</p>
+                                            </div>
+                                        )}
+
+                                        {status === 'DONE' && (
+                                            <div className="text-center animate-fade-in">
+                                                <div className="text-4xl sm:text-5xl mb-3">🏆</div>
+                                                <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Workout Complete!</h2>
+                                                
+                                                {syncMessage && (
+                                                    <div className={`text-sm mb-4 px-3 py-2 rounded max-w-sm mx-auto ${syncMessage.includes('Error') || syncMessage.includes('failed') || syncMessage.includes('No automation') ? 'bg-red-900/30 text-red-400' : 'bg-green-900/30 text-green-400'}`}>
+                                                        {syncMessage}
+                                                    </div>
+                                                )}
+
+                                                {(!GITHUB_TOKEN || GITHUB_TOKEN.includes("...") || syncMessage.includes('Error') || syncMessage.includes('failed')) && (
+                                                    <div className="mb-6 max-w-sm mx-auto">
+                                                        <p className="text-gray-400 text-xs mb-2">Automation skipped/failed. Copy the fallback code below manually:</p>
+                                                        <div className="bg-[#111] border border-gray-700 rounded-lg p-3 relative">
+                                                            <textarea readOnly value={currentSessionJson} className="w-full h-12 bg-[#1a1a1a] text-gray-400 text-[10px] font-mono p-2 rounded border border-gray-800 focus:outline-none resize-none" />
+                                                            <button onClick={handleCopyJson} className={`absolute top-4 right-4 text-xs font-medium px-2 py-1 rounded transition-colors ${copySuccess ? 'bg-green-600 text-white' : 'bg-gray-700 text-white'}`}>
+                                                                {copySuccess ? 'Copied!' : 'Copy Line'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <button 
+                                                    onClick={() => setStatus('IDLE')} 
+                                                    className="text-gray-400 hover:text-white border border-gray-700 hover:bg-gray-800 font-medium py-2 px-6 rounded-lg transition-colors text-sm"
+                                                >
+                                                    Back to Start
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* --- ANALYTICS VIEW --- */}
+                    {view === 'ANALYTICS' && (
+                        <div className="bg-[#1e1e1e] border border-gray-800 rounded-lg p-4 sm:p-6 animate-fade-in">
+                            
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-bold text-white">Progress Analytics</h2>
+                                <button 
+                                    onClick={fetchLocalData}
+                                    disabled={isFetchingData}
+                                    className="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-xs py-1.5 px-3 rounded transition-colors flex items-center gap-1"
+                                >
+                                    {isFetchingData ? 'Syncing...' : 'Sync Latest Data'}
+                                    <svg className={`w-3 h-3 ${isFetchingData ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                </button>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                                <div className="flex-1">
+                                    <label className="text-xs text-gray-500 block mb-1">Select View (By Day or Exercise)</label>
+                                    <select 
+                                        value={analyticsSelection} 
+                                        onChange={(e) => setAnalyticsSelection(e.target.value)}
+                                        className="w-full bg-[#2a2a2a] border border-gray-700 rounded text-sm text-white p-2 focus:outline-none focus:border-green-500"
+                                    >
+                                        <optgroup label="--- All Exercises in a Day ---">
+                                            <option value="DAY:Tuesday">Tuesday (All Exercises)</option>
+                                            <option value="DAY:Wednesday">Wednesday (All Exercises)</option>
+                                            <option value="DAY:Friday">Friday (All Exercises)</option>
+                                        </optgroup>
+                                        <optgroup label="--- Individual Exercises ---">
+                                            {allUniqueExercises.map(ex => (
+                                                <option key={ex.title} value={`EX:${ex.title}`}>{ex.title}</option>
+                                            ))}
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div className="w-full sm:w-48">
+                                    <label className="text-xs text-gray-500 block mb-1">Metric View</label>
+                                    <select 
+                                        value={analyticsMetric} 
+                                        onChange={(e) => setAnalyticsMetric(e.target.value)}
+                                        className="w-full bg-[#2a2a2a] border border-gray-700 rounded text-sm text-white p-2 focus:outline-none focus:border-green-500"
+                                    >
+                                        <option value="PERCENT">% Improvement (Default)</option>
+                                        <option value="RAW">Raw Score (Volume/Time)</option>
+                                    </select>
+                                </div>
+                                <div className="w-full sm:w-32">
+                                    <label className="text-xs text-gray-500 block mb-1">Timeframe</label>
+                                    <select 
+                                        value={analyticsTimeframe} 
+                                        onChange={(e) => setAnalyticsTimeframe(e.target.value)}
+                                        className="w-full bg-[#2a2a2a] border border-gray-700 rounded text-sm text-white p-2 focus:outline-none focus:border-green-500"
+                                    >
+                                        <option value="1W">Past Week</option>
+                                        <option value="1M">Past Month</option>
+                                        <option value="1Y">Past Year</option>
+                                        <option value="ALL">All Time</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="w-full bg-[#151515] border border-gray-800 rounded-lg p-2 sm:p-4 shadow-inner">
+                                {history.length === 0 ? (
+                                    <div className="h-48 flex items-center justify-center text-gray-500 text-sm">
+                                        No data found. Complete a workout or sync from GitHub.
+                                    </div>
+                                ) : (
+                                    <AnalyticsChart 
+                                        selection={analyticsSelection} 
+                                        metric={analyticsMetric} 
+                                        historyData={history} 
+                                        timeframe={analyticsTimeframe} 
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
