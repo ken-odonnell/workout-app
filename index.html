@@ -219,7 +219,9 @@
                         fill: false,
                         spanGaps: true, 
                         pointBackgroundColor: CHART_COLORS[index % CHART_COLORS.length],
-                        pointRadius: 4
+                        pointRadius: 7, // Increased for easier mobile tapping
+                        pointHoverRadius: 9, // Larger on hover
+                        pointHitRadius: 25 // Huge invisible touch target for mobile tapping
                     };
                 }).filter(ds => ds.data.some(d => d !== null)); 
 
