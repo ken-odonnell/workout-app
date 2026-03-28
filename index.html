@@ -90,7 +90,7 @@
             ],
             Wednesday: [
                 { id: 'W-A1', block: 'A1', title: 'Standing Dumbbell Overhead Press', desc: '', target: 'Shoulders, Triceps, Core Stabilization', sets: 4, repsLabel: '4 x 8-10' },
-                { id: 'W-A2', block: 'A2', title: 'Renegade Rows', desc: '(Push-up position, row one DB at a time)', target: 'Lats, Core (Anti-rotation), Shoulders', sets: 4, repsLabel: '4 x 8/arm', perSide: 'arm' },
+                { id: 'W-A2', block: 'A2', title: 'Alternating Bent-Over Dumbbell Rows', desc: '(Hinge at hips, row one arm while the other hangs or holds steady)', target: 'Lats, Core Stabilization, Upper Back', sets: 4, repsLabel: '4 x 8/arm', perSide: 'arm' },
                 { id: 'W-B1', block: 'B1', title: 'Weighted Push-ups', desc: '(Wearing the 50 lb backpack)', target: 'Chest, Front Delts, Triceps, Core', sets: 3, repsLabel: '3 x 10-12', noWeightInput: true },
                 { id: 'W-B2', block: 'B2', title: 'Underhand Chin-ups', desc: '(Strict, squeezing the biceps at the top)', target: 'Lats, Biceps, Upper Back', sets: 3, repsLabel: '3 x Max', noWeightInput: true },
                 { id: 'W-C1', block: 'C1', title: 'Weighted Plank', desc: '(Wearing your 50 lb backpack)', target: 'Total Core', sets: 3, repsLabel: '3 x 90 sec', isTime: true, noWeightInput: true },
@@ -219,9 +219,9 @@
                         fill: false,
                         spanGaps: true, 
                         pointBackgroundColor: CHART_COLORS[index % CHART_COLORS.length],
-                        pointRadius: 7, // Increased for easier mobile tapping
-                        pointHoverRadius: 9, // Larger on hover
-                        pointHitRadius: 25 // Huge invisible touch target for mobile tapping
+                        pointRadius: 7, 
+                        pointHoverRadius: 9, 
+                        pointHitRadius: 25 
                     };
                 }).filter(ds => ds.data.some(d => d !== null)); 
 
@@ -373,7 +373,7 @@
                 setGeneratedEncryptedToken(encrypted);
             };
 
-            // --- DATA FETCHING ---
+            // --- DATA FETCHING & GITHUB SYNC ---
             const fetchLocalData = async () => {
                 setIsFetchingData(true);
                 try {
@@ -420,13 +420,101 @@
                 }));
             };
 
+            // Core GitHub Update Function (Used for both Saving and Deleting)
+            const updateGithubFile = async (newHistoryArray) => {
+                if (!decryptedToken || !GITHUB_REPO) return false;
+                
+                try {
+                    const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`;
+                    const headers = { 'Authorization': `token ${decryptedToken}`, 'Accept': 'application/vnd.github.v3+json' };
+                    
+                    const getRes = await fetch(apiUrl, { headers });
+                    if (!getRes.ok) throw new Error("Could not read file from GitHub. Check Token.");
+                    
+                    const fileData = await getRes.json();
+                    const currentSha = fileData.sha;
+                    
+                    const updatedContentBase64 = b64EncodeUnicode(JSON.stringify(newHistoryArray, null, 2));
+
+                    const putRes = await fetch(apiUrl, {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify({
+                            message: `Auto-sync repository update`,
+                            content: updatedContentBase64,
+                            sha: currentSha
+                        })
+                    });
+
+                    if (!putRes.ok) throw new Error("Could not push update. Check Token permissions.");
+                    return true;
+
+                } catch (error) {
+                    console.error(error);
+                    setSyncMessage(`Error: ${error.message}`);
+                    return false;
+                }
+            };
+
+            const handleDeleteSession = async (indexToDelete) => {
+                if (!window.confirm("Are you sure you want to delete this workout session? This cannot be undone.")) return;
+                
+                const newHistory = [...history];
+                newHistory.splice(indexToDelete, 1);
+                
+                // Optimistic UI update
+                setHistory(newHistory);
+                localStorage.setItem('notion_workout_history', JSON.stringify(newHistory));
+                
+                // Sync to GitHub
+                if (decryptedToken && GITHUB_REPO) {
+                    setIsFetchingData(true); // Re-use loading spinner state for delete
+                    const success = await updateGithubFile(newHistory);
+                    if (!success) alert("Deleted locally, but failed to sync deletion to GitHub.");
+                    setIsFetchingData(false);
+                }
+            };
+
             // --- WORKOUT LOGIC ---
+            
+            // Helper to get previous performance
+            const getPreviousPerformance = (exerciseTitle) => {
+                if (!history || history.length === 0) return null;
+                const sortedHistory = [...history].sort((a,b) => new Date(b.date) - new Date(a.date));
+                
+                for (let session of sortedHistory) {
+                    const logEntry = Object.values(session.logs).find(l => l.title === exerciseTitle);
+                    if (logEntry) {
+                        let bestStr = "";
+                        let maxVolume = 0;
+                        Object.values(logEntry.sets).forEach(set => {
+                            const w = Number(set.weight) || 0;
+                            const r = Number(set.reps) || 0;
+                            const t = Number(set.time) || 0;
+                            if (logEntry.isTime) {
+                                if (t > maxVolume) { maxVolume = t; bestStr = `${t}s`; }
+                            } else {
+                                const vol = w * r || r; // Fallback to reps if bodyweight
+                                if (vol > maxVolume) {
+                                    maxVolume = vol;
+                                    bestStr = w > 0 ? `${w}lbs × ${r}` : `${r} reps`;
+                                }
+                            }
+                        });
+                        if (bestStr) return `Previous Best: ${bestStr}`;
+                    }
+                }
+                return "No previous data";
+            };
+
+            // Get the live active workouts for the selected day, including swaps
+            const currentDayWorkouts = selectedDay 
+                ? workoutData[selectedDay].map(w => swappedExercises[w.id] ? { ...swappedExercises[w.id], id: w.id, block: w.block, sets: w.sets } : w)
+                : [];
+
             useEffect(() => {
                 if (selectedDay) {
-                    const dayWorkouts = workoutData[selectedDay].map(w => 
-                        swappedExercises[w.id] ? { ...swappedExercises[w.id], id: w.id, block: w.block, sets: w.sets } : w
-                    );
-                    setSequence(generateSupersetSequence(dayWorkouts));
+                    setSequence(generateSupersetSequence(currentDayWorkouts));
                     
                     if (status === 'IDLE' || status === 'DONE') {
                         setCurrentIndex(-1);
@@ -538,47 +626,6 @@
                 }
             };
 
-            const pushToGithub = async (workoutSession) => {
-                if (!decryptedToken || !GITHUB_REPO) return false;
-                
-                try {
-                    const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`;
-                    const headers = { 'Authorization': `token ${decryptedToken}`, 'Accept': 'application/vnd.github.v3+json' };
-                    
-                    const getRes = await fetch(apiUrl, { headers });
-                    if (!getRes.ok) throw new Error("Could not read file from GitHub. Check Token.");
-                    
-                    const fileData = await getRes.json();
-                    const currentSha = fileData.sha;
-                    
-                    let existingHistory = [];
-                    try {
-                        existingHistory = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
-                    } catch(e) { console.error("Could not parse existing github data"); }
-
-                    existingHistory.push(workoutSession);
-                    const updatedContentBase64 = b64EncodeUnicode(JSON.stringify(existingHistory, null, 2));
-
-                    const putRes = await fetch(apiUrl, {
-                        method: 'PUT',
-                        headers: headers,
-                        body: JSON.stringify({
-                            message: `Auto-sync workout: ${workoutSession.day}`,
-                            content: updatedContentBase64,
-                            sha: currentSha
-                        })
-                    });
-
-                    if (!putRes.ok) throw new Error("Could not push update. Check Token permissions.");
-                    return true;
-
-                } catch (error) {
-                    console.error(error);
-                    setSyncMessage(`Error: ${error.message}`);
-                    return false;
-                }
-            };
-
             const handleWorkoutComplete = async () => {
                 setStatus('SYNCING');
                 
@@ -590,15 +637,16 @@
                 });
 
                 const workoutSession = { date: new Date().toISOString(), day: selectedDay, logs: enrichedLogs };
-
                 setCurrentSessionJson(JSON.stringify(workoutSession));
 
                 const newHistory = [...history, workoutSession];
+                
+                // Optimistic Update
                 setHistory(newHistory);
                 localStorage.setItem('notion_workout_history', JSON.stringify(newHistory));
 
                 if (decryptedToken) {
-                    const success = await pushToGithub(workoutSession);
+                    const success = await updateGithubFile(newHistory);
                     if (success) {
                         setSyncMessage('Successfully auto-synced to GitHub!');
                     } else {
@@ -742,7 +790,8 @@
                             {selectedDay && (
                                 <div className="rounded-lg border border-gray-800 bg-[#1e1e1e] shadow-xl overflow-hidden">
                                     <div className="flex flex-col w-full">
-                                        {workoutData[selectedDay].map(w => {
+                                        {/* Notice: We map over currentDayWorkouts so swaps appear in the list instantly */}
+                                        {currentDayWorkouts.map(w => {
                                             const isHighlighted = (status === 'ACTIVE' || status === 'SYNCING') && sequence[currentIndex]?.id === w.id;
                                             const setsDone = logs[w.id] ? Object.keys(logs[w.id]).length : 0;
                                             const isCompleted = setsDone >= w.sets;
@@ -840,6 +889,11 @@
                                                             </button>
                                                         </h2>
                                                     )}
+
+                                                    {/* PREVIOUS PERFORMANCE TARGET */}
+                                                    <div className="text-xs font-medium text-gray-400 mb-2 mt-1">
+                                                        {getPreviousPerformance(sequence[currentIndex].title)}
+                                                    </div>
                                                 </div>
 
                                                 <div className="flex flex-wrap justify-center gap-4 mb-6">
@@ -971,7 +1025,7 @@
 
                     {/* --- ANALYTICS VIEW --- */}
                     {view === 'ANALYTICS' && (
-                        <div className="bg-[#1e1e1e] border border-gray-800 rounded-lg p-4 sm:p-6 animate-fade-in">
+                        <div className="bg-[#1e1e1e] border border-gray-800 rounded-lg p-4 sm:p-6 animate-fade-in flex flex-col h-full">
                             
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-bold text-white">Progress Analytics</h2>
@@ -1031,7 +1085,7 @@
                                 </div>
                             </div>
 
-                            <div className="w-full bg-[#151515] border border-gray-800 rounded-lg p-2 sm:p-4 shadow-inner">
+                            <div className="w-full bg-[#151515] border border-gray-800 rounded-lg p-2 sm:p-4 shadow-inner mb-8">
                                 {history.length === 0 ? (
                                     <div className="h-48 flex items-center justify-center text-gray-500 text-sm">
                                         No data found. Complete a workout or sync from GitHub.
@@ -1045,6 +1099,38 @@
                                     />
                                 )}
                             </div>
+
+                            {/* --- HISTORY MANAGER (DELETE PAST WORKOUTS) --- */}
+                            <div className="border-t border-gray-800 pt-6">
+                                <h3 className="text-lg font-bold text-white mb-4">Manage Past Workouts</h3>
+                                {history.length === 0 ? (
+                                    <p className="text-gray-500 text-sm italic">No past sessions to manage.</p>
+                                ) : (
+                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                        {/* Display history in reverse chronological order */}
+                                        {history.slice().reverse().map((session, revIdx) => {
+                                            const originalIdx = history.length - 1 - revIdx;
+                                            return (
+                                                <div key={originalIdx} className="bg-[#252525] border border-gray-700 p-3 rounded-lg flex justify-between items-center">
+                                                    <div>
+                                                        <div className="text-sm text-gray-200 font-semibold">{new Date(session.date).toLocaleDateString()} - {session.day}</div>
+                                                        <div className="text-xs text-gray-500">{Object.keys(session.logs).length} exercises logged</div>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => handleDeleteSession(originalIdx)} 
+                                                        disabled={isFetchingData}
+                                                        className="text-red-400 hover:text-red-300 hover:bg-red-900/30 p-2 rounded transition-colors disabled:opacity-50"
+                                                        title="Delete Workout"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                    </button>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
                     )}
                 </div>
