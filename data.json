@@ -1,0 +1,1004 @@
+[
+  {
+    "date": "2026-03-14T00:07:42.658Z",
+    "day": "Friday",
+    "logs": {
+      "F-A1": {
+        "title": "Dumbbell RDLs",
+        "sets": {
+          "1": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "F-A2": {
+        "title": "Weighted Push-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "9",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "9",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "9",
+            "time": null
+          },
+          "4": {
+            "weight": "",
+            "reps": "9",
+            "time": null
+          }
+        }
+      },
+      "F-B1": {
+        "title": "Weighted Glute Bridges",
+        "sets": {
+          "1": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "F-B2": {
+        "title": "Single-Arm Dumbbell Rows",
+        "sets": {
+          "1": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "F-C": {
+        "title": "Alternating Cross-Body Hammer Curls",
+        "sets": {
+          "1": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "date": "2026-03-18T00:02:04.880Z",
+    "day": "Tuesday",
+    "logs": {
+      "T-A1": {
+        "title": "Heavy Dumbbell Front Squats",
+        "sets": {
+          "1": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "T-A2": {
+        "title": "Pull-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "4",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "4",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "4",
+            "time": null
+          },
+          "4": {
+            "weight": "",
+            "reps": "4",
+            "time": null
+          }
+        }
+      },
+      "T-B1": {
+        "title": "Weighted Push-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "9",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "11",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "T-B2": {
+        "title": "Dumbbell Reverse Lunges",
+        "sets": {
+          "1": {
+            "weight": "30",
+            "reps": "8",
+            "time": null
+          },
+          "2": {
+            "weight": "30",
+            "reps": "8",
+            "time": null
+          },
+          "3": {
+            "weight": "30",
+            "reps": "8",
+            "time": null
+          },
+          "4": {
+            "weight": "30",
+            "reps": "8",
+            "time": null
+          }
+        }
+      },
+      "T-C": {
+        "title": "Dumbbell Thrusters",
+        "sets": {
+          "1": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "date": "2026-03-19T02:08:51.310Z",
+    "day": "Wednesday",
+    "logs": {
+      "W-A1": {
+        "title": "Standing Dumbbell Overhead Press",
+        "sets": {
+          "1": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "40",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "W-A2": {
+        "title": "Renegade Rows",
+        "sets": {
+          "1": {
+            "weight": "30",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "30",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "30",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "30",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "W-B1": {
+        "title": "Weighted Push-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "W-B2": {
+        "title": "Underhand Chin-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "4",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "4",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "5",
+            "time": null
+          }
+        }
+      },
+      "W-C1": {
+        "title": "Weighted Plank",
+        "isTime": true,
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": null,
+            "time": 52
+          },
+          "2": {
+            "weight": "",
+            "reps": null,
+            "time": 52
+          },
+          "3": {
+            "weight": "",
+            "reps": null,
+            "time": 54
+          }
+        }
+      },
+      "W-C2": {
+        "title": "Tall-Kneeling Rotational Curls",
+        "sets": {
+          "1": {
+            "weight": "50",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "50",
+            "reps": "10",
+            "time": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "date": "2026-03-21T00:03:47.169Z",
+    "day": "Friday",
+    "logs": {
+      "F-A1": {
+        "title": "Dumbbell RDLs",
+        "sets": {
+          "1": {
+            "weight": "50",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "50",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "50",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "50",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "F-A2": {
+        "title": "Weighted Push-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "F-B1": {
+        "title": "Weighted Glute Bridges",
+        "sets": {
+          "1": {
+            "weight": "30",
+            "reps": "12",
+            "time": null
+          },
+          "2": {
+            "weight": "30",
+            "reps": "12",
+            "time": null
+          },
+          "3": {
+            "weight": "30",
+            "reps": "12",
+            "time": null
+          },
+          "4": {
+            "weight": "30",
+            "reps": "12",
+            "time": null
+          }
+        }
+      },
+      "F-B2": {
+        "title": "Single-Arm Dumbbell Rows",
+        "sets": {
+          "1": {
+            "weight": "30",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "30",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "30",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "30",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "F-C": {
+        "title": "Alternating Cross-Body Hammer Curls",
+        "sets": {
+          "1": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "date": "2026-03-28T00:07:01.305Z",
+    "day": "Wednesday",
+    "logs": {
+      "W-A1": {
+        "title": "Standing Dumbbell Overhead Press",
+        "sets": {
+          "1": {
+            "weight": "50",
+            "reps": "11",
+            "time": null
+          },
+          "2": {
+            "weight": "50",
+            "reps": "12",
+            "time": null
+          },
+          "3": {
+            "weight": "50",
+            "reps": "12",
+            "time": null
+          },
+          "4": {
+            "weight": "50",
+            "reps": "12",
+            "time": null
+          }
+        }
+      },
+      "W-A2": {
+        "title": "Single-Arm Dumbbell Rows",
+        "sets": {
+          "1": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "35",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "W-B1": {
+        "title": "Weighted Push-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          }
+        }
+      },
+      "W-B2": {
+        "title": "Underhand Chin-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "6",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "6",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "6",
+            "time": null
+          }
+        }
+      },
+      "W-C1": {
+        "title": "Weighted Plank",
+        "isTime": true,
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": null,
+            "time": 60
+          },
+          "2": {
+            "weight": "",
+            "reps": null,
+            "time": 61
+          },
+          "3": {
+            "weight": "",
+            "reps": null,
+            "time": 61
+          }
+        }
+      },
+      "W-C2": {
+        "title": "Tall-Kneeling Rotational Curls",
+        "sets": {
+          "1": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "date": "2026-03-31T23:58:48.676Z",
+    "day": "Tuesday",
+    "logs": {
+      "T-A1": {
+        "title": "Heavy Dumbbell Front Squats",
+        "sets": {
+          "1": {
+            "weight": "35",
+            "reps": "11",
+            "time": null
+          },
+          "2": {
+            "weight": "35",
+            "reps": "11",
+            "time": null
+          },
+          "3": {
+            "weight": "35",
+            "reps": "11",
+            "time": null
+          },
+          "4": {
+            "weight": "35",
+            "reps": "11",
+            "time": null
+          }
+        }
+      },
+      "T-A2": {
+        "title": "Pull-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "5",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "5",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "5",
+            "time": null
+          },
+          "4": {
+            "weight": "",
+            "reps": "5",
+            "time": null
+          }
+        }
+      },
+      "T-B1": {
+        "title": "Weighted Push-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          },
+          "4": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          }
+        }
+      },
+      "T-B2": {
+        "title": "Dumbbell Reverse Lunges",
+        "sets": {
+          "1": {
+            "weight": "50",
+            "reps": "8",
+            "time": null
+          },
+          "2": {
+            "weight": "50",
+            "reps": "8",
+            "time": null
+          },
+          "3": {
+            "weight": "50",
+            "reps": "8",
+            "time": null
+          },
+          "4": {
+            "weight": "50",
+            "reps": "8",
+            "time": null
+          }
+        }
+      },
+      "T-C": {
+        "title": "Dumbbell Thrusters",
+        "sets": {
+          "1": {
+            "weight": "50",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "50",
+            "reps": "10",
+            "time": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "date": "2026-04-04T00:07:15.443Z",
+    "day": "Wednesday",
+    "logs": {
+      "W-A1": {
+        "title": "Standing Dumbbell Overhead Press",
+        "sets": {
+          "1": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "2": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "3": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "4": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          }
+        }
+      },
+      "W-A2": {
+        "title": "Alternating Bent-Over Dumbbell Rows",
+        "sets": {
+          "1": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "2": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "3": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "4": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          }
+        }
+      },
+      "W-B1": {
+        "title": "Weighted Push-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "12",
+            "time": null
+          }
+        }
+      },
+      "W-B2": {
+        "title": "Underhand Chin-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "6",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "6",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "6",
+            "time": null
+          }
+        }
+      },
+      "W-C1": {
+        "title": "Weighted Plank",
+        "isTime": true,
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": null,
+            "time": 61
+          },
+          "2": {
+            "weight": "",
+            "reps": null,
+            "time": 52
+          },
+          "3": {
+            "weight": "",
+            "reps": null,
+            "time": 62
+          }
+        }
+      },
+      "W-C2": {
+        "title": "Tall-Kneeling Rotational Curls",
+        "sets": {
+          "1": {
+            "weight": "60",
+            "reps": "11",
+            "time": null
+          },
+          "2": {
+            "weight": "60",
+            "reps": "11",
+            "time": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "date": "2026-04-08T01:15:21.144Z",
+    "day": "Tuesday",
+    "logs": {
+      "T-A1": {
+        "title": "Weighted Push-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "13",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "13",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "13",
+            "time": null
+          },
+          "4": {
+            "weight": "",
+            "reps": "13",
+            "time": null
+          }
+        }
+      },
+      "T-A2": {
+        "title": "Pull-ups",
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": "5",
+            "time": null
+          },
+          "2": {
+            "weight": "",
+            "reps": "5",
+            "time": null
+          },
+          "3": {
+            "weight": "",
+            "reps": "5",
+            "time": null
+          },
+          "4": {
+            "weight": "",
+            "reps": "4",
+            "time": null
+          }
+        }
+      },
+      "T-B1": {
+        "title": "Standing Dumbbell Overhead Press",
+        "sets": {
+          "1": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "2": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "3": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          },
+          "4": {
+            "weight": "60",
+            "reps": "8",
+            "time": null
+          }
+        }
+      },
+      "T-B2": {
+        "title": "Alternating Cross-Body Hammer Curls",
+        "sets": {
+          "1": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          },
+          "2": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          },
+          "3": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          },
+          "4": {
+            "weight": "60",
+            "reps": "10",
+            "time": null
+          }
+        }
+      },
+      "T-C": {
+        "title": "Weighted Plank",
+        "isTime": true,
+        "sets": {
+          "1": {
+            "weight": "",
+            "reps": null,
+            "time": 48
+          },
+          "2": {
+            "weight": "",
+            "reps": null,
+            "time": 43
+          }
+        }
+      }
+    }
+  }
+]
